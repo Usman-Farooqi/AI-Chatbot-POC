@@ -1,0 +1,98 @@
+FORD F-150 2021 OWNER'S QUICK REFERENCE GUIDE
+(Excerpted for Digital Assistant Use)
+===============================================
+
+SECTION 3: SCHEDULED MAINTENANCE INTERVALS
+-------------------------------------------
+
+Ford recommends following the Intelligent Oil-Life Monitor (IOLM) system
+built into your vehicle. The following intervals are conservative guidelines
+for drivers who prefer fixed-interval scheduling:
+
+3.1 Engine Oil & Filter
+  Recommended interval: Every 5,000 miles OR every 6 months, whichever comes first.
+  Oil specification: Motorcraft SAE 5W-30 Full Synthetic Motor Oil (or equivalent
+    meeting Ford specification WSS-M2C946-B1).
+  Note: Using full synthetic oil is required to qualify for Ford's powertrain
+    warranty coverage on 2021+ EcoBoost engines.
+  Reset procedure: After oil change, hold the OK button on the steering wheel
+    for 3 seconds to reset the oil life indicator.
+
+3.2 Tire Rotation
+  Recommended interval: Every 7,500 miles OR every 6 months, whichever comes first.
+  Rotation pattern: Front-to-rear for non-directional tires (standard on XLT).
+  Note: Skipping or delaying tire rotation voids the tire manufacturer's treadwear
+    warranty on most brands.
+
+3.3 Brake System
+  Recommended inspection interval: Every 15,000 miles or annually.
+  Brake fluid replacement: Every 2 years regardless of mileage.
+  Warning signs requiring immediate attention: grinding noise, vibration when
+    braking, increased stopping distance, brake warning light.
+
+3.4 Air Filter (Engine)
+  Recommended replacement interval: Every 30,000 miles under normal conditions.
+  Every 15,000 miles if driving frequently on unpaved roads.
+
+3.5 Cabin Air Filter
+  Recommended replacement interval: Every 15,000-25,000 miles or annually.
+  Access: Behind the glove box (see Section 7.2 for replacement instructions).
+
+3.6 Spark Plugs
+  Recommended replacement interval: Every 60,000 miles (platinum plugs).
+  Using non-OEM or copper plugs is not recommended for the 3.5L EcoBoost engine.
+
+3.7 Transmission Fluid (10-Speed Automatic)
+  Recommended change interval: Every 75,000 miles under normal driving conditions.
+  Every 37,500 miles if towing frequently (more than 5,000 lbs).
+
+3.8 Cooling System / Antifreeze
+  Recommended flush interval: Every 100,000 miles or 10 years.
+
+SECTION 4: TIRE INFORMATION
+----------------------------
+
+4.1 Factory Tire Specifications (2021 F-150 XLT)
+  Tire size: P275/65R18
+  Recommended tire pressure: 35 PSI (front), 35 PSI (rear) — standard load
+  Maximum load: See door placard on driver side door jamb
+  Spare tire: Full-size steel spare (P275/65R18) — located under truck bed
+
+4.2 Tire Warning Light
+  The TPMS warning light will illuminate when tire pressure drops 25% below
+  recommended PSI. Check all four tires plus spare.
+
+SECTION 5: VEHICLE REGISTRATION AND LEGAL REQUIREMENTS
+-------------------------------------------------------
+
+5.1 Registration Renewal (Texas)
+  Texas law requires annual vehicle registration renewal.
+  Renewal notices are mailed approximately 90 days before expiry.
+  Online renewal available at TxDMV.gov.
+  Note: Vehicle must pass annual safety and emissions inspection BEFORE
+  registration can be renewed in Travis County (Austin).
+
+5.2 Inspection Requirements
+  Texas requires a combined safety + emissions inspection annually.
+  Inspection must be completed before registration renewal.
+  Approved inspection stations can be found at DPS.Texas.gov.
+
+SECTION 6: EMERGENCY PROCEDURES
+---------------------------------
+
+6.1 Roadside Assistance
+  Ford Roadside Assistance: 1-800-241-3673
+  Available 24/7 for the first 5 years or 60,000 miles of ownership.
+  Coverage includes: towing, flat tire, fuel delivery, battery jump, lockout.
+  Note: Ford Roadside Assistance is separate from insurance roadside coverage.
+  Check your insurance card for additional roadside assistance benefits.
+
+6.2 Flat Tire Procedure
+  1. Pull off road safely, turn on hazard lights.
+  2. Apply parking brake.
+  3. Remove spare from undercarriage (jack and tools in rear cargo area, left side).
+  4. Loosen lug nuts BEFORE jacking vehicle.
+  5. Jack vehicle at frame rail (see diagram in full manual Section 6.2).
+  6. Remove flat, mount spare, hand-tighten lug nuts.
+  7. Lower vehicle, torque lug nuts to 150 ft-lbs in star pattern.
+  8. Do not exceed 65 mph on spare tire.
