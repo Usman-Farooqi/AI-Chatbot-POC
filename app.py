@@ -13,11 +13,16 @@ from datetime import date, datetime
 import chat_engine
 from document_loader import (
     load_documents,
+    load_documents_from_mcp,
     get_vehicle_display_name,
     get_driver_name,
     get_current_mileage,
     get_registration_expiry,
 )
+
+# Constants for demo purposes — in a real app, these would be dynamic based on the logged-in user and their vehicle(s).
+DRIVER_ID = "TX-DL-4471829"
+VEHICLE_ID = "1FTFW1E85MFA12345"
 
 # ── Page config (must be first Streamlit call) ────────────────────────────────
 st.set_page_config(
@@ -66,7 +71,7 @@ st.markdown("""
 # ── Load documents (cached — only reads files once per session) ───────────────
 @st.cache_resource
 def get_documents():
-    return load_documents(data_dir="data")
+    return load_documents_from_mcp(driver_id=DRIVER_ID, car_id=VEHICLE_ID)
 
 
 try:

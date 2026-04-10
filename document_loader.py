@@ -19,6 +19,10 @@ import os
 from dataclasses import dataclass
 from datetime import datetime
 
+import requests
+
+MCP_URL = "http://localhost:8000/mcp"
+
 
 @dataclass
 class DocumentBundle:
@@ -29,6 +33,46 @@ class DocumentBundle:
     maintenance_records: str
     warranty_info: str
     loaded_at: str  # ISO timestamp — useful for cache-busting in production
+
+def mcp_request(payload: dict) -> dict:
+    resp = requests.post(MCP_URL, json=payload, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+def load_documents_from_mcp(driver_id: str, car_id: str) -> DocumentBundle:
+    # (Optional) initialize once and cache if you want
+    init_payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {},
+    }
+    _ = mcp_request(init_payload)
+
+    call_payload = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/call",
+        "params": {
+            "name": "load_vehicle_documents",
+            "arguments": {
+                "driver_name": driver_id,
+                "car_id": car_id,
+            },
+        },
+    }
+    result = mcp_request(call_payload)
+    # Result is MCP-style: content[0].json is your "document bundle"
+    content = result["result"]["content"][0]
+    bundle = content["json"]
+    return DocumentBundle(
+        vehicle_profile=bundle["vehicle_profile"],
+        driver_manual=bundle["driver_manual"],
+        insurance_card=bundle["insurance_card"],
+        maintenance_records=bundle["maintenance_records"],
+        warranty_info=bundle["warranty_info"],
+        loaded_at=datetime.now().isoformat(),
+    )
 
 
 def load_documents(data_dir: str = "data") -> DocumentBundle:
