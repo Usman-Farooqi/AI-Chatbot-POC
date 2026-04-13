@@ -14,106 +14,68 @@ ARCHITECTURE NOTE:
       pass
 """
 
+import asyncio
 import json
-import os
 from dataclasses import dataclass
 from datetime import datetime
 
-import requests
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
-MCP_URL = "http://localhost:8000/mcp"
-
+#MCP_URL = "http://localhost:8000/mcp"  # local
+MCP_URL = "https://vehicle-assistant-mcp-server.livelydune-32d815ec.westus2.azurecontainerapps.io/mcp"  # azure container app
 
 @dataclass
 class DocumentBundle:
-    """All documents for a single driver session."""
     vehicle_profile: dict
     driver_manual: str
     insurance_card: str
     maintenance_records: str
     warranty_info: str
-    loaded_at: str  # ISO timestamp — useful for cache-busting in production
+    loaded_at: str
 
-def mcp_request(payload: dict) -> dict:
-    resp = requests.post(MCP_URL, json=payload, timeout=10)
-    resp.raise_for_status()
-    return resp.json()
+async def load_documents_from_mcp_async(driver_id: str, car_id: str) -> DocumentBundle:
+    print("[client] opening streamable_http_client...")
+    async with streamable_http_client(MCP_URL) as (read_stream, write_stream, _notifications):
+        print("[client] got streams, creating ClientSession...")
+        async with ClientSession(read_stream, write_stream) as session:
+            print("[client] calling session.initialize()...")
+            await asyncio.wait_for(session.initialize(), timeout=10)
+            print("[client] initialize() done, calling load_vehicle_documents...")
+
+            result = await asyncio.wait_for(
+                session.call_tool(
+                    "load_vehicle_documents",
+                    arguments={"driver_id": driver_id, "car_id": car_id},
+                ),
+                timeout=1000,
+            )
+            print("[client] call_tool() returned")
+
+            if result.isError:
+                error_text = result.content[0].text if result.content else "Unknown error"
+                raise RuntimeError(f"MCP tool error: {error_text}")
+
+            part = result.content[0]
+            print("[client] content part type:", getattr(part, "type", None))
+            print("[client] content part text (first 200 chars):", getattr(part, "text", "")[:200])
+
+            # 2. Parse the JSON string
+            bundle = json.loads(part.text)
+
+            print("[client] bundle keys:", bundle.keys())
+
+            return DocumentBundle(
+                vehicle_profile=bundle["vehicle_profile"],
+                driver_manual=bundle["driver_manual"],
+                insurance_card=bundle["insurance_card"],
+                maintenance_records=bundle["maintenance_records"],
+                warranty_info=bundle["warranty_info"],
+                loaded_at=datetime.now().isoformat(),
+            )
 
 def load_documents_from_mcp(driver_id: str, car_id: str) -> DocumentBundle:
-    # (Optional) initialize once and cache if you want
-    init_payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {},
-    }
-    _ = mcp_request(init_payload)
-
-    call_payload = {
-        "jsonrpc": "2.0",
-        "id": 2,
-        "method": "tools/call",
-        "params": {
-            "name": "load_vehicle_documents",
-            "arguments": {
-                "driver_name": driver_id,
-                "car_id": car_id,
-            },
-        },
-    }
-    result = mcp_request(call_payload)
-    # Result is MCP-style: content[0].json is your "document bundle"
-    content = result["result"]["content"][0]
-    bundle = content["json"]
-    return DocumentBundle(
-        vehicle_profile=bundle["vehicle_profile"],
-        driver_manual=bundle["driver_manual"],
-        insurance_card=bundle["insurance_card"],
-        maintenance_records=bundle["maintenance_records"],
-        warranty_info=bundle["warranty_info"],
-        loaded_at=datetime.now().isoformat(),
-    )
-
-
-def load_documents(data_dir: str = "data") -> DocumentBundle:
-    """
-    Load all driver documents from the local data directory.
-
-    This function signature is stable — it will not change when the body is
-    replaced with Azure MCP calls. The rest of the app depends only on
-    DocumentBundle, not on where the data came from.
-    """
-    try:
-        with open(os.path.join(data_dir, "vehicle_profile.json"), "r") as f:
-            vehicle_profile = json.load(f)
-
-        with open(os.path.join(data_dir, "driver_manual.txt"), "r") as f:
-            driver_manual = f.read()
-
-        with open(os.path.join(data_dir, "insurance_card.txt"), "r") as f:
-            insurance_card = f.read()
-
-        with open(os.path.join(data_dir, "maintenance_records.txt"), "r") as f:
-            maintenance_records = f.read()
-
-        with open(os.path.join(data_dir, "warranty_info.txt"), "r") as f:
-            warranty_info = f.read()
-
-        return DocumentBundle(
-            vehicle_profile=vehicle_profile,
-            driver_manual=driver_manual,
-            insurance_card=insurance_card,
-            maintenance_records=maintenance_records,
-            warranty_info=warranty_info,
-            loaded_at=datetime.now().isoformat(),
-        )
-
-    except FileNotFoundError as e:
-        raise RuntimeError(
-            f"Could not load document: {e}. "
-            f"Make sure you are running the app from the project root directory "
-            f"and the ./data folder exists with all required files."
-        ) from e
+    return asyncio.run(load_documents_from_mcp_async(driver_id, car_id))
 
 
 def get_vehicle_display_name(bundle: DocumentBundle) -> str:

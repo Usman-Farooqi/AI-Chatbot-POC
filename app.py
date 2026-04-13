@@ -12,13 +12,12 @@ from datetime import date, datetime
 
 import chat_engine
 from document_loader import (
-    load_documents,
     load_documents_from_mcp,
     get_vehicle_display_name,
     get_driver_name,
     get_current_mileage,
     get_registration_expiry,
-)
+)  # New function to load from MCP
 
 # Constants for demo purposes — in a real app, these would be dynamic based on the logged-in user and their vehicle(s).
 DRIVER_ID = "TX-DL-4471829"
