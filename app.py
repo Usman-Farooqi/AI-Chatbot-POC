@@ -4,20 +4,14 @@ app.py — Streamlit UI for the Sasser Driver AI Chatbot POC.
 Run with:
     streamlit run app.py
 
-Requires a .env file with ANTHROPIC_API_KEY set (see .env.example).
+Requires a .env file with ANTHROPIC_API_KEY and MCP_URL set (see .env.example).
 """
 
 import streamlit as st
 from datetime import date, datetime
 
 import chat_engine
-from document_loader import (
-    load_documents_from_mcp,
-    get_vehicle_display_name,
-    get_driver_name,
-    get_current_mileage,
-    get_registration_expiry,
-)  # New function to load from MCP
+from vehicle_info import get_vehicle_info
 
 # Constants for demo purposes — in a real app, these would be dynamic based on the logged-in user and their vehicle(s).
 DRIVER_ID = "TX-DL-4471829"
@@ -67,16 +61,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Load documents (cached — only reads files once per session) ───────────────
+# ── Load vehicle info (cached — only calls MCP once per session) ──────────────
 @st.cache_resource
-def get_documents():
-    return load_documents_from_mcp(driver_id=DRIVER_ID, car_id=VEHICLE_ID)
+def get_cached_vehicle_info():
+    return get_vehicle_info(driver_id=DRIVER_ID, car_id=VEHICLE_ID)
 
 
 try:
-    bundle = get_documents()
+    info = get_cached_vehicle_info()
 except RuntimeError as e:
-    st.error(f"**Failed to load documents:** {e}")
+    st.error(f"**Failed to load vehicle info:** {e}")
     st.stop()
 
 
@@ -93,10 +87,10 @@ with st.sidebar:
     st.divider()
 
     # Vehicle profile card
-    driver_name = get_driver_name(bundle)
-    vehicle_name = get_vehicle_display_name(bundle)
-    current_mileage = get_current_mileage(bundle)
-    reg_expiry_str = get_registration_expiry(bundle)
+    driver_name = info.driver_name
+    vehicle_name = info.vehicle_name
+    current_mileage = info.current_mileage
+    reg_expiry_str = info.registration_expiry
 
     # Check if registration is within 90 days
     reg_warning = ""
@@ -153,8 +147,8 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-    # Docs loaded badge
-    st.caption(f"📄 5 documents loaded  •  {current_mileage:,} mi")
+    # Status badge
+    st.caption(f"📄 Connected to MCP • {current_mileage:,} mi")
 
 
 # ── Main chat area ────────────────────────────────────────────────────────────
@@ -187,7 +181,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     with st.chat_message("assistant"):
         try:
             response_text = st.write_stream(
-                chat_engine.stream_chat_response(st.session_state.messages, bundle)
+                chat_engine.stream_chat_response(st.session_state.messages, info)
             )
             st.session_state.messages.append(
                 {"role": "assistant", "content": response_text}
