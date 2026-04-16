@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-04-16T15:30:42.998080",
+  "chatbot_model": "claude-sonnet-4-6",
+  "judge_model": "claude-haiku-4-5",
+  "n_questions": 18,
+  "scores": {
+    "faithfulness": 0.6750305250305249,
+    "answer_relevancy": 0.5224128736120034,
+    "llm_context_precision_with_reference": 0.5785897435422005,
+    "context_recall": 0.578125
+  }
+}

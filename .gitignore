@@ -1,1 +1,4 @@
 /.env
+
+# PDF text extraction cache (auto-generated on first load, safe to delete)
+data/*.cache

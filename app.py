@@ -1,5 +1,5 @@
 """
-app.py — Streamlit UI for the Sasser Driver AI Chatbot POC.
+app.py — Streamlit UI for the AI Driver Chatbot POC.
 
 Run with:
     streamlit run app.py
@@ -7,12 +7,16 @@ Run with:
 Requires a .env file with ANTHROPIC_API_KEY set (see .env.example).
 """
 
+import os
+
 import streamlit as st
 from datetime import date, datetime
 
 import chat_engine
 from document_loader import (
     load_documents,
+    load_documents_from_mcp,
+    update_mileage_mcp,
     get_vehicle_display_name,
     get_driver_name,
     get_current_mileage,
@@ -66,6 +70,10 @@ st.markdown("""
 # ── Load documents (cached — only reads files once per session) ───────────────
 @st.cache_resource
 def get_documents():
+    azure_endpoint = os.getenv("AZURE_MCP_ENDPOINT")
+    if azure_endpoint:
+        driver_id = os.getenv("DRIVER_ID", "john_doe")
+        return load_documents_from_mcp(driver_id=driver_id, endpoint=azure_endpoint)
     return load_documents(data_dir="data")
 
 
@@ -122,6 +130,29 @@ with st.sidebar:
             col2.metric("Reg. Expires", reg_display)
         except ValueError:
             pass
+
+    # Mileage update (only shown when connected to Azure MCP)
+    if os.getenv("AZURE_MCP_ENDPOINT"):
+        st.divider()
+        st.markdown("#### Report Mileage")
+        new_miles = st.number_input(
+            "Current odometer reading",
+            min_value=current_mileage,
+            value=current_mileage,
+            step=50,
+            label_visibility="collapsed",
+        )
+        if st.button("Update Mileage", use_container_width=True, type="primary"):
+            try:
+                update_mileage_mcp(
+                    driver_id=os.getenv("DRIVER_ID", "john_doe"),
+                    new_mileage=int(new_miles),
+                    endpoint=os.getenv("AZURE_MCP_ENDPOINT"),
+                )
+                st.cache_resource.clear()
+                st.rerun()
+            except Exception as e:
+                st.error(f"Mileage update failed: {e}")
 
     st.divider()
 
@@ -182,8 +213,15 @@ if prompt := st.chat_input(f"Ask about your {vehicle_name}..."):
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
+            azure_endpoint = os.getenv("AZURE_MCP_ENDPOINT")
+            driver_id = os.getenv("DRIVER_ID", "john_doe")
             response_text = st.write_stream(
-                chat_engine.stream_chat_response(st.session_state.messages, bundle)
+                chat_engine.stream_chat_response(
+                    st.session_state.messages,
+                    bundle,
+                    driver_id=driver_id if azure_endpoint else None,
+                    endpoint=azure_endpoint,
+                )
             )
             st.session_state.messages.append(
                 {"role": "assistant", "content": response_text}

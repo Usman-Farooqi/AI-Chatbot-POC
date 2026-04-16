@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-16T15:42:26.283450",
+  "chatbot_model": "claude-sonnet-4-6",
+  "judge_model": "claude-haiku-4-5",
+  "n_questions": 18,
+  "scores": {
+    "faithfulness": {
+      "mean": 0.6853775853775855,
+      "scored": 18,
+      "failed": 0,
+      "total": 18
+    },
+    "answer_relevancy": {
+      "mean": 0.5790765338838553,
+      "scored": 18,
+      "failed": 0,
+      "total": 18
+    },
+    "llm_context_precision_with_reference": {
+      "mean": 0.5154761904358736,
+      "scored": 18,
+      "failed": 0,
+      "total": 18
+    },
+    "context_recall": {
+      "mean": 0.6805555555555556,
+      "scored": 18,
+      "failed": 0,
+      "total": 18
+    }
+  }
+}
