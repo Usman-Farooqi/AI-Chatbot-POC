@@ -69,16 +69,24 @@ with st.sidebar:
 </div>
 """, unsafe_allow_html=True)
 
-    # Row 1: Current Miles + Registration
-    col1, col2 = st.columns(2)
-    col1.container(key="mileage_metric").metric("Current Miles", f"{current_mileage:,}")
+    st.divider()
 
+    # Row 1: Current Miles + Oil Change Due
+    col1, col2 = st.columns(2)
+    col1.container(key="mileage_metric").metric("Current Miles", f"{current_mileage:,} mi")
+    col2.container(key="oil_change_metric").metric("Oil Change Due", info.oil_change_due)
+
+    
+
+    # Row 2: Registration Expiry + Insurance Expiry
+    col3, col4 = st.columns(2)
+    
     if reg_expiry_str:
         try:
             reg_expiry = datetime.strptime(reg_expiry_str, "%Y-%m-%d").date()
             days_until_reg = (reg_expiry - date.today()).days
             if days_until_reg <= 90:
-                with col2.container(key="reg_metric"):
+                with col3.container(key="reg_metric"):
                     st.metric("Reg. Expires", f"{days_until_reg} days")
                 st.markdown(REG_WARNING_CSS, unsafe_allow_html=True)
             else:
@@ -87,18 +95,21 @@ with st.sidebar:
         except ValueError:
             pass
 
-    # Row 2: Oil Change Due + Insurance Expiry
-    col3, col4 = st.columns(2)
-    col3.metric("Oil Change Due", "52,750 mi")
-    col4.metric("Insurance Exp.", "Sep 2026")
-
-    st.divider()
+    col4.container(key="insurance_metric").metric("Insurance Exp.", info.insurance_expiry)
 
 # ── Main chat area ────────────────────────────────────────────────────────────
-st.title("My Vehicle Assistant")
-st.caption(
-    f"Ask me anything about your {vehicle_name} — maintenance, insurance, warranty, or registration."
-)
+with st.container(key="chat_header"):
+    title_col, btn_col = st.columns([5, 2])
+    title_col.title("My Vehicle Assistant")
+    with btn_col:
+        with st.container(key="clear_btn_container"):
+            if st.session_state.messages:
+                if st.button("🗑️ Clear Conversation", key="clear_btn"):
+                    st.session_state.messages = []
+                    st.rerun()
+    st.caption(
+        f"Ask me anything about your {vehicle_name} — maintenance, insurance, warranty, or registration."
+    )
 
 if not st.session_state.messages:
     st.info(
@@ -112,30 +123,27 @@ if not st.session_state.messages:
             st.session_state.messages.append({"role": "user", "content": question})
             st.rerun()
 else:
-    if st.button("🗑️ Clear Conversation", key="clear_btn"):
-        st.session_state.messages = []
-        st.rerun()
+    # Scrollable message area — height is overridden by CSS to fill available space
+    with st.container(key="messages_area", height=600):
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-# Render conversation history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # Generate assistant response inline so it streams inside the scroll container
+        if st.session_state.messages[-1]["role"] == "user":
+            with st.chat_message("assistant"):
+                try:
+                    response_text = st.write_stream(
+                        chat_engine.stream_chat_response(st.session_state.messages, info)
+                    )
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": response_text}
+                    )
+                except RuntimeError as e:
+                    st.error(f"**Error:** {e}")
+                    st.session_state.messages.pop()
 
-# Chat input
+# Chat input always rendered at bottom by Streamlit
 if prompt := st.chat_input(f"Ask about your {vehicle_name}..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.rerun()
-
-# Generate assistant response
-if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
-    with st.chat_message("assistant"):
-        try:
-            response_text = st.write_stream(
-                chat_engine.stream_chat_response(st.session_state.messages, info)
-            )
-            st.session_state.messages.append(
-                {"role": "assistant", "content": response_text}
-            )
-        except RuntimeError as e:
-            st.error(f"**Error:** {e}")
-            st.session_state.messages.pop()
