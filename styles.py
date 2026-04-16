@@ -101,6 +101,7 @@ MAIN_CSS = """
         height: calc(100vh - 20rem) !important;
         max-height: calc(100vh - 20rem) !important;
         overflow-y: auto !important;
+        border: none !important;
     }
     /* Remove the large default padding-bottom (~10rem) on the block container —
        it was there to leave room for stBottom when the page scrolled, but the
@@ -176,6 +177,21 @@ MAIN_CSS = """
     }
 
 </style>
+"""
+
+STREAMING_AVATAR_CSS = """
+<style>
+    @keyframes avatar-pulse {
+        0%, 100% { filter: brightness(1)    drop-shadow(0 0 0px rgba(57, 128, 228, 0));    }
+        50%       { filter: brightness(1.15) drop-shadow(0 0 7px rgba(57, 128, 228, 0.95)); }
+    }
+    /* Only animate the avatar of the message that contains the marker span.
+       The marker is injected inline during streaming and removed on the next rerun. */
+    [data-testid="stChatMessage"]:has(.avatar-pulse-marker) img {
+        animation: avatar-pulse 1.4s ease-in-out infinite;
+    }
+</style>
+<span class="avatar-pulse-marker" style="display:none"></span>
 """
 
 REG_WARNING_CSS = """
